@@ -6,27 +6,19 @@
   <title>Corrode Proxy</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
-  <!-- Fixes Portuguese translate + blank iframe -->
   <meta http-equiv="Content-Language" content="en" />
   <meta name="google" content="notranslate" />
-
-  <!-- Scramjet + deps from CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@mercuryworkshop/scramjet@2.0.0-alpha/dist/scramjet.all.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mercuryworkshop/scramjet@2.0.0-alpha/dist/scramjet.sync.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@latest/dist/baremux.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mercuryworkshop/curl-transport@latest/dist/index.js"></script>
 </head>
 <body class="proxy-page">
   <div class="proxy-container">
     <main class="proxy-content" id="proxy-content">
       <div class="loading-state" id="loading-state">
         <div class="loading-spinner"></div>
-        <p>Loading...</p>
+        <p>Loading via Bolt Unblocker...</p>
       </div>
     </main>
 
-    <!-- Your exact bottom nav -->
+    <!-- Bottom Navigation Bar -->
     <div class="bottom-nav">
       <div class="nav-left">
         <button class="nav-btn" id="home-btn"><i class="fas fa-home"></i></button>
@@ -43,6 +35,7 @@
       <div class="nav-right">
         <button class="nav-btn" id="history-btn"><i class="fas fa-history"></i></button>
         <button class="nav-btn" id="bookmark-btn"><i class="far fa-bookmark"></i></button>
+        <button class="nav-btn" id="api-toggle-btn"><i class="fas fa-code"></i></button>
       </div>
     </div>
 

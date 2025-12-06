@@ -1,8 +1,5 @@
 class BookmarkManager {
-    constructor() {
-        this.key = 'corrode-bookmarks';
-    }
-    
+    constructor() { this.key = 'corrode-bookmarks'; }
     getDefaults() {
         return [
             { id: 1, name: 'Google', url: 'https://www.google.com', icon: 'fab fa-google', type: 'default' },
@@ -13,7 +10,6 @@ class BookmarkManager {
             { id: 6, name: 'Movies', url: 'https://www.netflix.com', icon: 'fas fa-film', type: 'default' }
         ];
     }
-    
     getAll() {
         const saved = localStorage.getItem(this.key);
         if (!saved || JSON.parse(saved).length === 0) {
@@ -23,183 +19,68 @@ class BookmarkManager {
         }
         return JSON.parse(saved);
     }
-    
-    save(bookmarks) {
-        localStorage.setItem(this.key, JSON.stringify(bookmarks));
-    }
-    
+    save(bookmarks) { localStorage.setItem(this.key, JSON.stringify(bookmarks)); }
     add(name, url, icon = 'fas fa-globe') {
         const bookmarks = this.getAll();
-        const bookmark = {
-            id: Date.now(),
-            name: name,
-            url: url,
-            icon: icon,
-            type: 'custom',
-            date: new Date().toISOString()
-        };
-        
+        const bookmark = { id: Date.now(), name, url, icon, type: 'custom', date: new Date().toISOString() };
         bookmarks.push(bookmark);
         this.save(bookmarks);
         return bookmark;
     }
-    
     remove(id) {
-        const bookmarks = this.getAll();
-        const filtered = bookmarks.filter(b => b.id !== id);
+        const filtered = this.getAll().filter(b => b.id !== id);
         this.save(filtered);
-    }
-    
-    update(bookmarks) {
-        this.save(bookmarks);
     }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    const bookmarkManager = new BookmarkManager();
-    const appsGrid = document.getElementById('apps-grid');
+    const bm = new BookmarkManager();
+    const grid = document.getElementById('apps-grid');
     const searchInput = document.querySelector('.search-input');
-    const settingsBtn = document.querySelector('.settings-btn');
-    const footerLinks = document.querySelectorAll('.footer-link');
-    
-    function renderBookmarks() {
-        const bookmarks = bookmarkManager.getAll();
-        appsGrid.innerHTML = '';
-        
-        console.log('Rendering bookmarks:', bookmarks);
-        
-        bookmarks.forEach(bookmark => {
+
+    function render() {
+        grid.innerHTML = '';
+        bm.getAll().forEach(b => {
             const tile = document.createElement('div');
             tile.className = 'app-tile';
-            tile.dataset.id = bookmark.id;
-            tile.dataset.url = bookmark.url;
-            
+            tile.dataset.id = b.id;
+            tile.dataset.url = b.url;
             tile.innerHTML = `
-                ${bookmark.type === 'custom' ? '<button class="delete-tile"><i class="fas fa-times"></i></button>' : ''}
-                <div class="tile-icon">
-                    <i class="${bookmark.icon}"></i>
-                </div>
-                <span class="tile-label">${bookmark.name}</span>
+                ${b.type === 'custom' ? '<button class="delete-tile"><i class="fas fa-times"></i></button>' : ''}
+                <div class="tile-icon"><i class="${b.icon}"></i></div>
+                <span class="tile-label">${b.name}</span>
             `;
-            
-            tile.addEventListener('click', function(e) {
-                if (!e.target.closest('.delete-tile')) {
-                    this.style.transform = 'translateY(-3px) scale(1.03)';
-                    this.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.3), 0 0 25px rgba(255, 255, 255, 0.12)';
-                    
-                    setTimeout(() => {
-                        this.style.transform = 'translateY(-3px)';
-                        this.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.08)';
-                    }, 150);
-                    
-                    sessionStorage.setItem('corrode-app', bookmark.name.toLowerCase());
-                    sessionStorage.setItem('corrode-url', bookmark.url);
-                    window.location.href = 'proxy.html';
+            tile.addEventListener('click', e => {
+                if (e.target.closest('.delete-tile')) {
+                    bm.remove(b.id);
+                    render();
+                    return;
                 }
+                sessionStorage.setItem('corrode-url', b.url);
+                location.href = 'proxy.html';
             });
-            
-            if (bookmark.type === 'custom') {
-                const deleteBtn = tile.querySelector('.delete-tile');
-                deleteBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const id = parseInt(tile.dataset.id);
-                    bookmarkManager.remove(id);
-                    
-                    tile.style.transform = 'scale(0.8)';
-                    tile.style.opacity = '0';
-                    setTimeout(() => {
-                        renderBookmarks();
-                    }, 200);
-                    
-                    showNotification('Bookmark removed');
-                });
-            }
-            
-            appsGrid.appendChild(tile);
+            grid.appendChild(tile);
         });
-        
-        const addTile = document.createElement('div');
-        addTile.className = 'app-tile add-tile';
-        addTile.innerHTML = `
-            <div class="tile-icon">
-                <i class="fas fa-plus"></i>
-            </div>
-            <span class="tile-label">Add</span>
-        `;
-        
-        addTile.addEventListener('click', function() {
-            const appName = prompt('Site Name:');
-            if (appName) {
-                const appUrl = prompt('Site URL:');
-                if (appUrl) {
-                    bookmarkManager.add(appName, appUrl);
-                    renderBookmarks();
-                    showNotification('Bookmark added');
-                }
+
+        const add = document.createElement('div');
+        add.className = 'app-tile add-tile';
+        add.innerHTML = `<div class="tile-icon"><i class="fas fa-plus"></i></div><span class="tile-label">Add</span>`;
+        add.onclick = () => {
+            const name = prompt('Site Name:');
+            if (name) {
+                const url = prompt('Site URL:');
+                if (url) { bm.add(name, url); render(); }
             }
-        });
-        
-        appsGrid.appendChild(addTile);
+        };
+        grid.appendChild(add);
     }
-    
-    function showNotification(message) {
-        const div = document.createElement('div');
-        div.textContent = message;
-        div.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #222;
-            color: #ccc;
-            padding: 10px 18px;
-            border-radius: 10px;
-            border-left: 3px solid #666;
-            z-index: 1000;
-            font-size: 0.85rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            transform: translateX(100%);
-            opacity: 0;
-            transition: all 0.3s ease;
-        `;
-        document.body.appendChild(div);
-        
-        setTimeout(() => {
-            div.style.transform = 'translateX(0)';
-            div.style.opacity = '1';
-        }, 10);
-        
-        setTimeout(() => {
-            div.style.transform = 'translateX(100%)';
-            div.style.opacity = '0';
-            setTimeout(() => div.remove(), 300);
-        }, 2000);
-    }
-    
-    searchInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && this.value.trim()) {
-            sessionStorage.setItem('corrode-search', this.value);
-            window.location.href = 'proxy.html';
+
+    searchInput.addEventListener('keypress', e => {
+        if (e.key === 'Enter' && searchInput.value.trim()) {
+            sessionStorage.setItem('corrode-search', searchInput.value.trim());
+            location.href = 'proxy.html';
         }
     });
-    
-    if (settingsBtn) {
-        settingsBtn.addEventListener('click', function() {
-            this.style.transform = 'rotate(90deg)';
-            setTimeout(() => {
-                this.style.transform = 'rotate(180deg)';
-            }, 150);
-            
-            setTimeout(() => {
-                this.style.transform = '';
-            }, 600);
-        });
-    }
-    
-    footerLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-        });
-    });
-    
-    renderBookmarks();
+
+    render();
 });
